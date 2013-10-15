@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Ben Kremer's Chat App</title>
+    <meta charset="utf-8">
+    <script src="http://chatbuilder.hackreactor.com/ChatBuilder.js"></script>
+  </head>
+  <body>
+    <script>
+    delete Chat.display; 
+    delete Chat.fetch;
+    delete Chat.send;
+
+Chat.newDisplay = function(chatText){
+ $('.messages').append('<li>'+chatText+'</li>');
+};
+
+Chat.newFetch = function(callbackFunction){
+  $.ajax('https://api.parse.com/1/classes/chats', {
+      success: function(response) {
+       var feedback = [];  
+       var responseLength = response["results"].length;
+       for (var i = 0; i<responseLength; i++){
+          feedback.push(response["results"][i]["text"]);
+       }  
+      return callbackFunction(feedback);
+      }
+  });
+};
+
+Chat.newSend = function(sendingText) {
+  //console.log("sending:"+sendingText);
+  var fullSendingText = Chat.username + ": " + sendingText;
+  $.ajax({
+    type: "POST",
+    url: "https://api.parse.com/1/classes/chats",
+    data: JSON.stringify({"text":fullSendingText}),
+  });
+};
+   //Chat.guide.start();
+
+
+//fetch data from server
+Chat.newFetch(parseFunction);
+
+//display content as li
+function parseFunction(chatArray) {
+for (var i = 0;i<chatArray.length;i++) {
+  Chat.newDisplay(chatArray[i]);
+}
+};
+
+//refresh every 3-5 seconds
+function startActivityRefresh() {
+    timer = setInterval(function() {
+        $('.messages').empty();
+        $('.messages').load(Chat.newFetch(parseFunction));
+    }, 3000)
+};
+startActivityRefresh();
+
+//send chat text to server
+$(document).ready(function(){
+    $('.send').click(function(){
+        var toAdd = $('input[class=draft]').val();
+        Chat.newSend(toAdd);
+    });
+});
+
+    </script>
+
+
+    <h2>Chit~Chat</h2>
+
+    <input class="draft" type="text"/> <button class="send">send</button>
+
+    <ul class="messages">
+    </ul>
+
+  </body>
+</html>
