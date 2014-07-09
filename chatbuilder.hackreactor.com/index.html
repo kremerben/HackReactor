@@ -19,9 +19,9 @@ Chat.newFetch = function(callbackFunction){
   $.ajax('https://api.parse.com/1/classes/chats', {
       success: function(response) {
        var feedback = [];  
-       var responseLength = response["results"].length;
+       var responseLength = response.results.length;
        for (var i = 0; i<responseLength; i++){
-          feedback.push(response["results"][i]["text"]);
+          feedback.push(response.results[i].text);
        }  
       return callbackFunction(feedback);
       }
@@ -37,10 +37,11 @@ Chat.newSend = function(sendingText) {
     data: JSON.stringify({"text":fullSendingText}),
   });
 };
-   //Chat.guide.start();
+   
+//   Chat.guide.start();
 
 
-//fetch data from server
+//fetch data from server - need this for initial showing of chats
 Chat.newFetch(parseFunction);
 
 //display content as li
@@ -53,9 +54,8 @@ for (var i = 0;i<chatArray.length;i++) {
 //refresh every 3-5 seconds
 function startActivityRefresh() {
     timer = setInterval(function() {
-        $('.messages').empty();
-        $('.messages').load(Chat.newFetch(parseFunction));
-    }, 3000)
+        $('.messages').empty().append(Chat.newFetch(parseFunction));
+    }, 5000)
 };
 startActivityRefresh();
 
